@@ -6,11 +6,50 @@ class Currency {
 }
 
 class CurrencyConverter {
-    constructor() {}
+    constructor(apiUrl, currencies=[]) {
+        this.apiUrl=apiUrl,
+        this.currencies=currencies
+    }
 
-    getCurrencies(apiUrl) {}
+    async getCurrencies() {
+        const response=await fetch(this.apiUrl + "/currencies")
 
-    convertCurrency(amount, fromCurrency, toCurrency) {}
+        const datos=await response.json()
+        console.log(datos)
+        for (let currencies in datos){
+            console.log(datos[currencies])
+            const newCurrency=new Currency(currencies, datos[currencies])
+            this.currencies.push(newCurrency)
+        }
+        console.log(this.currencies)
+        
+        
+    }
+
+    async convertCurrency(amount, fromCurrency, toCurrency) {
+        try {
+            if(toCurrency.code == fromCurrency.code) {
+                console.log("SON IGUALES")
+                console.log(typeof(amount))
+                
+                return parseInt(amount)
+            }
+    
+            const datos=await fetch(this.apiUrl + `/latest?amount=${amount}&from=${fromCurrency.code}&to=${toCurrency.code}`)
+            if (!datos.ok) {
+                throw new Error(`Error al realizar la solicitud`);
+            }
+            
+            const montoFinal= await datos.json()
+    
+            console.log(montoFinal.rates[toCurrency.code])
+            return montoFinal.rates[toCurrency.code]
+        } catch (error) {
+            console.log(error)
+            return null
+        }
+        
+    }
 }
 
 document.addEventListener("DOMContentLoaded", async () => {
@@ -41,7 +80,6 @@ document.addEventListener("DOMContentLoaded", async () => {
             fromCurrency,
             toCurrency
         );
-
         if (convertedAmount !== null && !isNaN(convertedAmount)) {
             resultDiv.textContent = `${amount} ${
                 fromCurrency.code

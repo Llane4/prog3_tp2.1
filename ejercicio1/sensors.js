@@ -1,4 +1,22 @@
-class Sensor {}
+class Sensor {
+    constructor(id, name, type, value, unit, updated_at){
+        if(!["temperature", "humidity", "pressure"].includes(type)  ){
+            throw new Error("Type tiene un valor invalido")
+        }
+        this.id=id
+        this.name=name
+        this.type=type
+        this.value=value
+        this.unit=unit
+        this.updated_at=updated_at
+
+    }
+
+    updateValue(value){
+        this.value=value
+        this.updated_at = new Date()
+    }
+}
 
 class SensorManager {
     constructor() {
@@ -26,14 +44,31 @@ class SensorManager {
                 default: // Valor por defecto si el tipo es desconocido
                     newValue = (Math.random() * 100).toFixed(2);
             }
-            sensor.updateValue = newValue;
+            console.log(newValue)
+            sensor.updateValue(newValue);
             this.render();
         } else {
             console.error(`Sensor ID ${id} no encontrado`);
         }
     }
 
-    async loadSensors(url) {}
+    async loadSensors(url) {
+        const promesa=await fetch(url)
+        const datos=await promesa.json()
+        console.log(datos)
+        for(var i=0;i<datos.length;i++){
+            const nuevoSensor=new Sensor(
+                datos[i].id,
+                datos[i].name,
+                datos[i].type,
+                datos[i].value,
+                datos[i].unit,
+                datos[i].updated_at
+            )
+            this.addSensor(nuevoSensor)
+        }
+        this.render()
+    }
 
     render() {
         const container = document.getElementById("sensor-container");
